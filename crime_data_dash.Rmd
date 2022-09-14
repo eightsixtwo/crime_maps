@@ -1,0 +1,96 @@
+---
+title: "Northumbria Police Crime Data"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(leaflet)
+library(plotly)
+
+data <- readRDS(file = 'crime_data')
+```
+
+
+Interactive Map
+====================
+
+```{r}
+
+# create palette for colouring markers
+pal <- colorFactor("Set1", data$crime_type)
+
+leaflet(data = data) %>% 
+  setView(lat = 54.961187, lng = -1.848064, zoom = 14) %>% 
+  addTiles() %>% 
+  addCircleMarkers(lng = ~longitude, 
+             lat = ~latitude,
+             clusterOptions = markerClusterOptions(),
+             color = ~pal(crime_type),
+             radius = 3,
+             opacity = 1,
+             popup = ~crime_type
+             ) %>%
+  addLegend("bottomleft", pal = pal, values = ~crime_type,
+    title = "Crime Types",
+    opacity = 1
+  )
+```
+
+Summary
+===================
+
+The figures in this project are based on all crimes reported to Northumbria Police in the year July 2021 to June 2022.  
+
+The data for this project was downloaded from [data.police.uk](data.police.uk)
+
+
+Row  {data-height=200}
+------------------
+
+### Total Number of Crimes
+
+```{r}
+
+totCrimes <- nrow(data)
+valueBox(totCrimes, 
+         icon = "fa-users")
+
+```
+
+
+### Crime Types
+
+```{r}
+
+crimeTypes <- length(unique(data$crime_type))
+valueBox(crimeTypes, icon = "fa-stream")
+
+```
+
+
+
+Row {data-height=800}
+------------------
+
+### Crime Type Counts
+
+```{r}
+g <- ggplot(data) +
+  geom_bar(aes(x = crime_type, fill = crime_type), show.legend = FALSE) + 
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  xlab("Crime Type") +
+  ylab("Number of Crimes") 
+
+
+ggplotly(g)
+```
+
+
+
+

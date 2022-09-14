@@ -1,0 +1,86 @@
+---
+title: "Crime Maps - Northumbria"
+author: "AHF"
+date: "2022-08-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# The following code checks to see if specified packages are installed, then 
+# installs missing packages and loads them into the environment using 'require'.
+# list required packages
+pckges <- c("tidyverse", "janitor", "leaflet", "ggplot2", "rgdal",
+            "sf", "RColorBrewer", "readr")
+# determine packages not installed
+mssng <- pckges[!(pckges %in% installed.packages()[,"Package"])]
+# install missing
+if(length(mssng)) install.packages(mssng, dependencies = TRUE, repos = "https://cloud.r-project.org/")
+# load 
+lapply(pckges, require, character.only = TRUE)
+
+```
+
+## Read in Data
+
+First, read in data.  The data for this project was downloaded from [data.police.uk](data.police.uk) and it contains crimes recorded to Northumbria Police between June 2021 and June 2022.
+
+Use this [link](https://data.police.uk/data/fetch/0e636298-8714-4bd5-8c1d-350187ba7d29/) to get the same dataset.
+
+```{r dataIn, include=FALSE}
+# Read data in from RDS (created by 'crime_data_prep.R' script)
+data <- readRDS(file = 'crime_data')
+
+```
+
+## Explore Data
+
+```{r}
+glimpse(data)
+
+```
+
+Notice that latitude and longitude are in degrees (WGS84): 
+
+* Latitude values have five digits after the decimal points, indicating they are roughly accurate to within 1.1m.  
+* Longitude values have six digits after the decimal point, indicating they are roughly accurate to 10cm. 
+
+The points we will place on a map will give quite and accurate location that each crime was committed, although it's worth considering that we have no knowledge of how these coordinates were recorded (or if the crime was actually committed at this location).
+
+Also notice that several of our categorical variables are stored as character data types but we would be best to change them to factors.
+
+```{r charToFactor}
+
+#convert all character columns to factor
+data <- as.data.frame(unclass(data), stringsAsFactors = TRUE)
+
+glimpse(data)
+
+```
+
+OK, now lets start exploring:
+
+```{r}
+
+summary(data)
+
+```
+
+
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = month))
+
+```
+
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = crime_type, fill = crime_type), show.legend = FALSE) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+```
+
+```{r}
+
+```
+
